@@ -8,7 +8,7 @@ on:
     branches: [active]
 
 jobs:
-  create_release:
+  create_codebase_release:
     runs-on: ubuntu-latest
     if: "startsWith(github.event.head_commit.message, 'bump version to')"
 
@@ -34,12 +34,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # - name: Set env.commit_message value
+      # - id: get-commit-message
+      #   run: |
+      #     echo "commit_message=yellow" >> $GITHUB_ENV
+
       - id: get-tag-name
+        name: get tag from commit - ${{ github.event.head_commit.message }}
         uses: actions/github-script@v3
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const cmt = context.event.head_commit.message;
+            const cmt = ${{ github.event.head_commit.message }};
             const tag = cmt.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)[0]
             core.setOutput('tag', tag)
 
