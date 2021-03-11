@@ -23,12 +23,11 @@ jobs:
         uses: actions-ecosystem/action-regex-match@v2
         with:
           text: ${{ github.event.head_commit.message }}
-          regex: '/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g'
+          regex: /v[0-9.]\d*(-?)([a-z0-9.-]+)*/g
 
       - name: Assign the tag to env.RELEASE_TAG
-        if: ${{ steps.get-tag-name.outputs.match != '' }}
         run: |
-          echo "RELEASE_TAG=${{ steps.get-tag-name.outputs.group1 }}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${{ steps.get-tag-name.outputs.match }}" >> $GITHUB_ENV
       
       - name: Cache pub dependencies
         uses: actions/cache@v2
