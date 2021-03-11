@@ -47,6 +47,7 @@ jobs:
           script: |
             const cmt = ${{ github.event.head_commit.message }}
             const tag = cmt.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)[0]
+            console.log(tag)
             core.setOutput('tag', tag)
 
       - name: Create and publish release
