@@ -71,12 +71,12 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Merge ${{ steps.get-tag-name.outputs.tag }} into ${{ main_branch }} branch
+      - name: Merge ${{ steps.get-tag-name.outputs.tag }} into ${{ env.main_branch }} branch
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
           from_branch: ${{ steps.get-tag-name.outputs.tag }}
-          target_branch: ${{ main_branch }}
+          target_branch: ${{ env.main_branch }}
           github_token: ${{ github.token }}
 
       - name: Delete ${{ steps.get-tag-name.outputs.tag }} branch
