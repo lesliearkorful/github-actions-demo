@@ -34,19 +34,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - id: get-tag-name
-        name: get tag from commit - ${{ github.event.head_commit.message }}
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          debug: true
-          script: |
-            const commit = ${{ github.event.head_commit.message }}
-            const tag = commit.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)![0]
-            core.setOutput('tag', tag)
+      - name: Get tag from commit message - "${{ github.event.head_commit.message }}"
+        id: get-tag-name
+        run: echo "::set-output name=tag::(echo '${{ github.event.head_commit.message }}' | perl -nle 'm/(v?[0-9.]\d*(-?)([a-z0-9.-]+)*)/g; print $1')"
 
-      - run: echo "Tag name - ${{steps.get-tag-name.outputs.tag}}"
-
+      - name: Print tag name
+        run: echo "The current tag is ${{ steps.get-tag-name.outputs.tag }}"
+        
       - name: Create and publish release
         id: create_release
         uses: actions/create-release@v1
