@@ -18,19 +18,21 @@ jobs:
         with:
           java-version: "12.x"
 
-      - id: get-tag-name
-        name: Extract tag from commit message - "${{ github.event.head_commit.message }}"
-        uses: actions-ecosystem/action-regex-match@v2
+      - uses: actions/github-script@v3
+        id: get-tag-name
+        name: Extract tag from commit - ${{ github.event.head_commit.message }}
         with:
-          text: ${{ github.event.head_commit.message }}
-          regex: /v[0-9.]\d*(-?)([a-z0-9.-]+)*/g
-
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const commit = ${{ github.event.head_commit.message }};
+            return commit.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)![0]
+      
       - name: Assign the tag to env.RELEASE_TAG
         run: |
-          echo "RELEASE_TAG=${{ steps.get-tag-name.outputs.match }}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=${{ steps.get-tag-name.outputs.result }}" >> $GITHUB_ENV
       
-      - name: Cache pub dependencies
-        uses: actions/cache@v2
+      - uses: actions/cache@v2
+        name: Cache pub dependencies
         with:
           path: /opt/hostedtoolcache/flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
@@ -42,8 +44,8 @@ jobs:
       - run: flutter pub get
       - run: flutter test
 
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        name: Checkout code
 
       - uses: peterjgrainger/action-create-branch@v2.0.1
         env:
@@ -51,9 +53,9 @@ jobs:
         with:
           branch: ${{ env.RELEASE_TAG}}
 
-      - name: Create Tag and Release ${{ env.RELEASE_TAG}}
+      - uses: actions/create-release@v1
+        name: Create Tag and Release ${{ env.RELEASE_TAG}}
         id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -62,16 +64,16 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Merge ${{ env.RELEASE_TAG}} into ${{ env.main_branch }} branch
-        uses: devmasx/merge-branch@v1.3.1
+      - uses: devmasx/merge-branch@v1.3.1
+        name: Merge ${{ env.RELEASE_TAG}} into ${{ env.main_branch }} branch
         with:
           type: now
           from_branch: ${{ env.RELEASE_TAG}}
           target_branch: ${{ env.main_branch }}
           github_token: ${{ github.token }}
 
-      - name: Delete ${{ env.RELEASE_TAG}} branch
-        uses: dawidd6/action-delete-branch@v3
+      - uses: dawidd6/action-delete-branch@v3
+        name: Delete ${{ env.RELEASE_TAG}} branch
         with:
           github_token: ${{ github.token }}
           branches: ${{ env.RELEASE_TAG}}
