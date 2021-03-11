@@ -65,3 +65,9 @@ jobs:
           #   - Second Change
           draft: false
           prerelease: false
+
+      - name: Delete ${{ steps.get-tag-name.outputs.tag }} branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+          github_token: ${{ github.token }}
+          branches: ${{ steps.get-tag-name.outputs.tag }}
