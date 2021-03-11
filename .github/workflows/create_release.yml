@@ -1,0 +1,60 @@
+name: Create Release and Pull Request
+env:
+  flutter_version: "1.22.6"
+  main_branch: "main"
+  pr_reviewers: |
+    lesliearkorful
+
+on:
+  push:
+    branches: [active]
+
+jobs:
+  CREATE_RELEASE:
+    runs-on: ubuntu-latest
+    if: "startsWith(github.event.head_commit.message, 'bump version to')"
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+
+      - name: Setup release information
+        # Extract version tag from commit. eg "bump version to v0.0.0"
+        run: |
+          envTag=`perl -nle 'm/(v?[0-9.]\d*(-?)([a-z0-9.-]+)*)/g; print $1' <<< '${{ github.event.head_commit.message }}'`
+          export tag=$envTag
+          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
+
+      - uses: actions/cache@v2
+        name: Cache pub dependencies
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: ${{ env.flutter_version }}
+
+      - run: flutter pub get
+      - run: flutter test
+
+      - uses: actions/checkout@v2
+        name: Checkout code
+
+      - uses: peterjgrainger/action-create-branch@v2.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: ${{ env.RELEASE_TAG}}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: Merge release ${{ env.RELEASE_TAG }} into ${{ env.main_branch }}
+          title: Release ${{ env.RELEASE_TAG }}
+          body: PR for new release. Once merged, a release and tag will be auto-created and the ${{ env.RELEASE_TAG }} branch will be auto-deleted
+          branch: ${{ env.RELEASE_TAG }}
+          base: ${{ env.main_branch }}
+          reviewers: ${{ env.pr_reviewers }}
