@@ -35,9 +35,8 @@ jobs:
       - name: Cache pub dependencies
         uses: actions/cache@v2
         with:
-          path: ${{ env.FLUTTER_HOME }}/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: ${{ runner.os }}-pub-
+          path: ${{ matrix.flutter_path }}
+          key: ${{ runner.os }}-flutter
       - run: flutter pub get
       - run: flutter test
 
@@ -51,7 +50,6 @@ jobs:
           script: |
             const tag = context.ref.split('/')[2]
             core.setOutput('tag', tag)
-      - run: echo "Tag name - ${{steps.get-tag-name.outputs.tag}}"
 
       - name: Create Release
         id: create_release
