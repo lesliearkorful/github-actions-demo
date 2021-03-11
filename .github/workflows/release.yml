@@ -5,10 +5,10 @@ env:
 
 on:
   push:
-    branches: ["develop"]
+    branches: [active]
 
 jobs:
-  test:
+  create_codebase_release:
     runs-on: ubuntu-latest
     if: "startsWith(github.event.head_commit.message, 'bump version to')"
 
@@ -18,8 +18,18 @@ jobs:
         with:
           java-version: "12.x"
 
-      - name: Cache pub dependencies
-        uses: actions/cache@v2
+      - name: Setup release information
+        run: |
+          envTag=`perl -nle 'm/(v?[0-9.]\d*(-?)([a-z0-9.-]+)*)/g; print $1' <<< '${{ github.event.head_commit.message }}'`
+          export tag=$envTag
+          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
+
+      # - name: Assign the tag to env.RELEASE_TAG
+      #   run: |
+      #     echo "RELEASE_TAG=${{ steps.get-tag-name.outputs.result }}" >> $GITHUB_ENV
+
+      - uses: actions/cache@v2
+        name: Cache pub dependencies
         with:
           path: /opt/hostedtoolcache/flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
@@ -31,39 +41,36 @@ jobs:
       - run: flutter pub get
       - run: flutter test
 
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+        name: Checkout code
 
-      - id: get-tag-name
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const cmt = context.event.head_commit.message;
-            const tag = cmt.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)[0]
-            core.setOutput('tag', tag)
-
-      - name: Create and publish release
-        id: create_release
-        uses: actions/create-release@v1
+      - uses: peterjgrainger/action-create-branch@v2.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.get-tag-name.outputs.tag }}
-          release_name: ${{ steps.get-tag-name.outputs.tag }}
+          branch: ${{ env.RELEASE_TAG}}
+
+      - uses: actions/create-release@v1
+        name: Create Tag and Release ${{ env.RELEASE_TAG}}
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG}}
+          release_name: ${{ env.RELEASE_TAG}}
           draft: false
           prerelease: false
 
-      - name: Merge ${{ steps.get-tag-name.outputs.tag }} into ${{ env.main_branch }} branch
-        uses: devmasx/merge-branch@v1.3.1
+      - uses: devmasx/merge-branch@v1.3.1
+        name: Merge ${{ env.RELEASE_TAG}} into ${{ env.main_branch }} branch
         with:
           type: now
-          from_branch: ${{ steps.get-tag-name.outputs.tag }}
+          from_branch: ${{ env.RELEASE_TAG}}
           target_branch: ${{ env.main_branch }}
           github_token: ${{ github.token }}
 
-      - name: Delete ${{ steps.get-tag-name.outputs.tag }} branch
-        uses: dawidd6/action-delete-branch@v3
+      - uses: dawidd6/action-delete-branch@v3
+        name: Delete ${{ env.RELEASE_TAG}} branch
         with:
           github_token: ${{ github.token }}
-          branches: ${{ steps.get-tag-name.outputs.tag }}
+          branches: ${{ env.RELEASE_TAG}}
