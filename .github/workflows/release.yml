@@ -35,8 +35,9 @@ jobs:
       - name: Cache pub dependencies
         uses: actions/cache@v2
         with:
-          path: ${{ matrix.flutter_path }}
-          key: ${{ runner.os }}-flutter
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          
       - run: flutter pub get
       - run: flutter test
 
