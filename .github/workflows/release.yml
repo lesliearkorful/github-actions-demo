@@ -5,10 +5,10 @@ env:
 
 on:
   push:
-    branches: ["develop"]
+    branches: [active]
 
 jobs:
-  test:
+  create_release:
     runs-on: ubuntu-latest
     if: "startsWith(github.event.head_commit.message, 'bump version to')"
 
