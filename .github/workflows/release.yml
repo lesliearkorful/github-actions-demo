@@ -6,6 +6,7 @@ name: create release
 # events but only for the develop branch
 env:
   flutter_version: "1.22.6"
+  main_branch: "main"
 
 on:
   #   push:
@@ -69,6 +70,14 @@ jobs:
           #   - Second Change
           draft: false
           prerelease: false
+
+      - name: Merge ${{ steps.get-tag-name.outputs.tag }} into ${{ main_branch }} branch
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          from_branch: ${{ steps.get-tag-name.outputs.tag }}
+          target_branch: ${{ main_branch }}
+          github_token: ${{ github.token }}
 
       - name: Delete ${{ steps.get-tag-name.outputs.tag }} branch
         uses: dawidd6/action-delete-branch@v3
