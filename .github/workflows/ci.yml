@@ -1,4 +1,4 @@
-name: Run Tests
+name: CI
 env:
   flutter_version: "1.22.6"
 
@@ -7,7 +7,7 @@ on:
     branches: [active]
 
 jobs:
-  run_tests:
+  RUN_TESTS:
     runs-on: ubuntu-latest
 
     steps:
