@@ -34,11 +34,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # - name: Set env.commit_message value
-      # - id: get-commit-message
-      #   run: |
-      #     echo "commit_message=yellow" >> $GITHUB_ENV
-
       - id: get-tag-name
         name: get tag from commit - ${{ github.event.head_commit.message }}
         uses: actions/github-script@v3
@@ -46,7 +41,7 @@ jobs:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
             const cmt = ${{ github.event.head_commit.message }}
-            const tag = cmt.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)[0]
+            const tag = cmt.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)![0]
             console.log(tag)
             core.setOutput('tag', tag)
 
