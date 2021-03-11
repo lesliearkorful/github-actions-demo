@@ -39,11 +39,13 @@ jobs:
         uses: actions/github-script@v3
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
+          debug: true
           script: |
-            const cmt = ${{ github.event.head_commit.message }}
-            const tag = cmt.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)![0]
-            console.log(tag)
+            const commit = ${{ github.event.head_commit.message }}
+            const tag = commit.match(/v[0-9.]\d*(-?)([a-z0-9.-]+)*/g)![0]
             core.setOutput('tag', tag)
+
+      - run: echo "Tag name - ${{steps.get-tag-name.outputs.tag}}"
 
       - name: Create and publish release
         id: create_release
