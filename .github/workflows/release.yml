@@ -20,9 +20,9 @@ jobs:
 
       - name: Setup release information
         run: |
-          RELEASE_TAG=demo_tag=`perl -nle 'm/(v?[0-9.]\d*(-?)([a-z0-9.-]+)*)/g; print $1' <<< ${{ github.event.head_commit.message }}`
-          export RELEASE_TAG=$versionName
-          echo "::set-env name=RELEASE_TAG::$VERSION_NAME"
+          envTag=`perl -nle 'm/(v?[0-9.]\d*(-?)([a-z0-9.-]+)*)/g; print $1' <<< ${{ github.event.head_commit.message }}`
+          export tag=$envTag
+          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
 
       # - name: Assign the tag to env.RELEASE_TAG
       #   run: |
