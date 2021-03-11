@@ -4,6 +4,9 @@ name: create release
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the develop branch
+env:
+  flutter_version: "1.22.6"
+
 on:
   #   push:
   #     branches: [ develop ]
@@ -28,16 +31,16 @@ jobs:
       # - uses: webfactory/ssh-agent@v0.4.1
       # with:
       #   ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: "stable"
-
       - name: Cache pub dependencies
         uses: actions/cache@v2
         with:
           path: /opt/hostedtoolcache/flutter
           key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
-          
+
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter_version: ${{ env.flutter_version }}
+
       - run: flutter pub get
       - run: flutter test
 
