@@ -2,8 +2,7 @@ name: Create Release and Pull Request
 env:
   flutter_version: "1.22.6"
   main_branch: "main"
-  pr_reviewers: |
-    lesliearkorful
+  pr_reviewers: "lesliearkorful"
 
 on:
   push:
@@ -50,11 +49,13 @@ jobs:
           branch: ${{ env.RELEASE_TAG}}
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: repo-sync/pull-request@v2
         with:
-          commit-message: Merge release ${{ env.RELEASE_TAG }} into ${{ env.main_branch }}
-          title: Release ${{ env.RELEASE_TAG }}
-          body: PR for new release. Once merged, a release and tag will be auto-created and the ${{ env.RELEASE_TAG }} branch will be auto-deleted
-          branch: ${{ env.RELEASE_TAG }}
-          base: ${{ env.main_branch }}
-          reviewers: ${{ env.pr_reviewers }}
+          source_branch: ${{ env.RELEASE_TAG}}
+          destination_branch: ${{ env.main_branch }}
+          pr_title: "Release ${{ env.RELEASE_TAG }}"
+          pr_body: "PR for new release. Once merged, a release and tag will be auto-created and the ${{ env.RELEASE_TAG }} branch will be auto-deleted"
+          pr_reviewer: ${{ env.pr_reviewers }}
+          pr_label: "auto-pr,release"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+         
