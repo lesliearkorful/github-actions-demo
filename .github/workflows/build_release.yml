@@ -1,0 +1,60 @@
+name: Merge and Build Release
+env:
+  flutter_version: "1.22.6"
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  BUILD_RELEASE:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: "12.x"
+
+      - uses: actions/cache@v2
+        name: Cache pub dependencies
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: ${{ env.flutter_version }}
+
+      - run: flutter pub get
+      - run: flutter test
+
+      - uses: actions/checkout@v2
+        name: Checkout code
+
+      - uses: actions/create-release@v1
+        name: Create Tag and Release ${{ env.RELEASE_TAG}}
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_TAG}}
+          release_name: ${{ env.RELEASE_TAG}}
+          draft: false
+          prerelease: false
+
+      # - uses: devmasx/merge-branch@v1.3.1
+      #   name: Merge ${{ env.RELEASE_TAG}} into ${{ env.main_branch }} branch
+      #   with:
+      #     type: now
+      #     from_branch: ${{ env.RELEASE_TAG}}
+      #     target_branch: ${{ env.main_branch }}
+      #     github_token: ${{ github.token }}
+
+      - uses: dawidd6/action-delete-branch@v3
+        name: Delete ${{ env.RELEASE_TAG}} branch
+        with:
+          github_token: ${{ github.token }}
+          branches: ${{ env.RELEASE_TAG}}
