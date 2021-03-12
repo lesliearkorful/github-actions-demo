@@ -34,6 +34,13 @@ jobs:
       - uses: actions/checkout@v2
         name: Checkout code
 
+      - name: Extract release tag
+        # Extract version tag from commit. eg "bump version to v0.0.0"
+        run: |
+          envTag=`perl -nle 'm/(v?[0-9.]\d*(-?)([a-z0-9.-]+)*)/g; print $1' <<< '${{ github.event.head_commit.message }}'`
+          export tag=$envTag
+          echo "RELEASE_TAG=$tag" >> $GITHUB_ENV
+
       - uses: actions/create-release@v1
         name: Create Tag and Release ${{ env.RELEASE_TAG}}
         id: create_release
