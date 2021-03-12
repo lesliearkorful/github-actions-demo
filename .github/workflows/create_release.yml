@@ -1,4 +1,4 @@
-name: Create Release and Pull Request
+name: Create Release Branch and PR
 env:
   flutter_version: "1.22.6"
   main_branch: "main"
@@ -11,7 +11,7 @@ on:
 jobs:
   CREATE_RELEASE:
     runs-on: ubuntu-latest
-    if: "startsWith(github.event.head_commit.message, 'bump version to')"
+    if: "startsWith(github.event.head_commit.message, 'bump version')"
 
     steps:
       - uses: actions/checkout@v2
