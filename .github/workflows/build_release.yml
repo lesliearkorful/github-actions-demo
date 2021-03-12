@@ -52,16 +52,17 @@ jobs:
           draft: false
           prerelease: false
 
-      # - uses: devmasx/merge-branch@v1.3.1
-      #   name: Merge ${{ env.RELEASE_TAG}} into ${{ env.main_branch }} branch
-      #   with:
-      #     type: now
-      #     from_branch: ${{ env.RELEASE_TAG}}
-      #     target_branch: ${{ env.main_branch }}
-      #     github_token: ${{ github.token }}
-
       - uses: dawidd6/action-delete-branch@v3
         name: Delete ${{ env.RELEASE_TAG}} branch
         with:
           github_token: ${{ github.token }}
           branches: ${{ env.RELEASE_TAG}}
+
+      - name: Build the APK
+        run: flutter build appbundle --release
+
+      - name: Upload artifact to Github
+        uses: actions/upload-artifact@v1
+        with:
+          name: release-apk
+          path: build/app/outputs/apk/release/app-release.apk
